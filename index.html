@@ -40,8 +40,13 @@
     </template>
 
     <template id="todo-filters">
+      <style>
+        .selected {
+          font-weight: bold;
+        }
+      </style>
       <slot name="count"></slot> items left
-      <button class="all-filter">All</button>
+      <button class="all-filter selected">All</button>
       <button class="done-filter">Done</button>
       <button class="active-filter">Active</button>
     </template>
@@ -55,7 +60,7 @@
       <todo-entry done="true">Base class</todo-entry>
       <todo-entry done="false">Toggle all items</todo-entry>
       <todo-entry done="false">Clear completed</todo-entry>
-      <todo-entry done="false">Bold current filter</todo-entry>
+      <todo-entry done="true">Bold current filter</todo-entry>
       <todo-entry done="false">Fix issues with multiple apps per page (gobals etc.)</todo-entry>
       <todo-entry done="false">Improve re-rendering</todo-entry>
       <todo-entry done="true">Allow passing entries into the HTML tag</todo-entry>

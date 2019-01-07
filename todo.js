@@ -187,14 +187,17 @@ class TodoFilters extends BaseElement {
     this.updateCount();
     this.appendChild(this.count);
 
-    this.shadowRoot.querySelector('.all-filter').addEventListener('click', e => {
-      this.send('updateFilter', () => true);
-    });
-    this.shadowRoot.querySelector('.done-filter').addEventListener('click', e => {
-      this.send('updateFilter', todo => todo.done);
-    });
-    this.shadowRoot.querySelector('.active-filter').addEventListener('click', e => {
-      this.send('updateFilter', todo => !todo.done);
+    [
+      ['.all-filter', () => true],
+      ['.done-filter', todo => todo.done],
+      ['.active-filter', todo => !todo.done]
+    ].forEach(([query, filter]) => {
+      const button = this.shadowRoot.querySelector(query);
+      button.addEventListener('click', e => {
+        this.send('updateFilter', filter);
+        this.shadowRoot.querySelector('.selected').classList.remove('selected');
+        button.classList.add('selected');
+      });
     });
   }
 }
