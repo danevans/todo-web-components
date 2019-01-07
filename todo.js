@@ -1,31 +1,9 @@
-// Is there a way to keep this within TodoApp and pass it into subcomponents?
-const todos = [{
-  title: 'Toggles',
-  done: true
-}, {
-  title: 'Base class',
-  done: true
-}, {
-  title: 'Toggle all items',
-  done: false
-}, {
-  title: 'Clear completed',
-  done: false
-}, {
-  title: 'Bold current filter',
-  done: false
-}, {
-  title: 'Fix issues with multiple apps per page (gobals etc.)',
-  done: false
-}, {
-  title: 'Improve re-rendering',
-  done: false
-}, {
-  title: 'Allow passing options into the HTML tag',
-  done: false
-}];
+class TodoEntry extends HTMLElement {
+  get title() { return this.textContent.trim(); }
+  get done() { return this.getAttribute('done') === 'true'; }
+}
 
-let currentFilter = () => true;
+window.customElements.define('todo-entry', TodoEntry);
 
 class BaseElement extends HTMLElement {
   get templateName() {
@@ -60,20 +38,53 @@ class BaseElement extends HTMLElement {
 }
 
 class TodoApp extends BaseElement {
+  constructor() {
+    super();
+
+    this.todos = [];
+    // Make sure we don't delete anything already attaching a handler
+    const prev = window.onload;
+    // Is there a better way to get the contents of the tag?
+    window.onload = () => {
+      if (prev) { prev(); }
+      for (let todo of this.children) {
+        this.todos.push({
+          title: todo.title,
+          done: todo.done
+        });
+      }
+      this.render();
+    }
+  }
+
+  render() {
+    super.render();
+
+    // These initialize the values that will be used to render
+    // Might be a better way to pass values down from the parent
+    const list = this.shadowRoot.querySelector('todo-list');
+    list.todos = this.todos;
+    list.currentFilter = () => true;
+    list.render();
+    const filters = this.shadowRoot.querySelector('todo-filters');
+    filters.todos = this.todos;
+    filters.updateCount();
+  }
+
   // These are my current method of doing DDAU
   addItem(title) {
     const item = {
       title,
       done: false
     };
-    todos.push(item);
+    this.todos.push(item);
     this.shadowRoot.querySelector('todo-list').appendItem(item);
     this.shadowRoot.querySelector('todo-filters').updateCount();
-    console.table(todos);
+    console.table(this.todos);
   }
 
   removeItem(item) {
-    todos.splice(todos.indexOf(item), 1);
+    this.todos.splice(this.todos.indexOf(item), 1);
     // Can we just remove node?
     this.shadowRoot.querySelector('todo-list').render();
     this.shadowRoot.querySelector('todo-filters').updateCount();
@@ -87,9 +98,10 @@ class TodoApp extends BaseElement {
   }
 
   updateFilter(filter) {
-    currentFilter = filter;
+    const list = this.shadowRoot.querySelector('todo-list');
+    list.currentFilter = filter;
     // Is there a more elegant way to do this?
-    this.shadowRoot.querySelector('todo-list').render();
+    list.render();
   }
 }
 
@@ -125,9 +137,12 @@ class TodoList extends BaseElement {
   render() {
     super.render();
 
-    for (let todo of todos) {
-      if (currentFilter(todo)) {
-        this.appendItem(todo);
+    // In the first render todo-app hasn't had time to attach the todos/filter
+    if (this.todos) {
+      for (let todo of this.todos) {
+        if (this.currentFilter(todo)) {
+          this.appendItem(todo);
+        }
       }
     }
   }
@@ -159,7 +174,9 @@ window.customElements.define('todo-item', TodoItem);
 
 class TodoFilters extends BaseElement {
   updateCount() {
-    this.count.textContent = todos.filter(t => !t.done).length;
+    if (this.todos) {
+      this.count.textContent = this.todos.filter(t => !t.done).length;
+    }
   }
 
   render() {
