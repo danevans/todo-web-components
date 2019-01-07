@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>TODO</title>
+    <!-- <link rel="stylesheet" href="todo.css"> -->
+  </head>
+  <body>
+    <!-- Templates first because script needs them  -->
+    <!-- This first template renders all the subsequent ones -->
+    <template id="todo-app">
+      <todo-entry-form></todo-entry-form>
+      <todo-list></todo-list>
+      <todo-filters></todo-filters>
+    </template>
+
+    <template id="todo-entry-form">
+      <form>
+        <input type="text" placeholder="Get the milk" />
+        <button type="submit" type="submit">Create Todo</button>
+      </form>
+    </template>
+
+    <template id="todo-list">
+      <ul></ul>
+    </template>
+
+    <template id="todo-item">
+      <style>
+        .done {
+          text-decoration: line-through;
+        }
+      </style>
+
+      <li>
+        <slot name="title"></slot>
+        <button class="done-button">Done</button>
+        <button class="delete-button">Delete</button>
+      </li>
+    </template>
+
+    <template id="todo-filters">
+      <slot name="count"></slot> items left
+      <button class="all-filter">All</button>
+      <button class="done-filter">Done</button>
+      <button class="active-filter">Active</button>
+    </template>
+
+    <!-- Here we define custom elements using templates -->
+    <script src="todo.js"></script>
+
+    <!-- Instantiate the app itself with this tag -->
+    <todo-app></todo-app>
+  </body>
+</html>
